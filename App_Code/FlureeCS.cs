@@ -26,6 +26,7 @@ using ZXing.PDF417.Internal;
 using System.Web.Script.Serialization;
 using System.Globalization;
 using Org.BouncyCastle.Bcpg.OpenPgp;
+using iText.StyledXmlParser.Jsoup.Nodes;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -37,9 +38,9 @@ public class FlureeCS
           (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
     private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-    public static string servertranurl = "http://localhost:8090/fdb/ssb/bsebmatrix/transact";
-    public static string serverqryurl = "http://localhost:8090/fdb/ssb/bsebmatrix/query";
-    public static string servermulqryurl = "http://localhost:8090/fdb/ssb/nhdc/multi-query";
+    public static string servertranurl = "http://localhost:8091/fdb/ssb/bsebmatrix/transact";
+    public static string serverqryurl = "http://localhost:8091/fdb/ssb/bsebmatrix/query";
+    public static string servermulqryurl = "http://localhost:8091/fdb/ssb/nhdc/multi-query";
 
 
 
@@ -419,10 +420,10 @@ public class FlureeCS
     {
         return JsonConvert.SerializeObject(obj);
     }
-   
 
-  
-    public string InsertAgencyAccessFile(string uploadAgency,string viewerAgency,string documentType)
+
+
+    public string InsertAgencyAccessFile(string uploadAgency, string viewerAgency, string documentType)
     {
         try
         {
@@ -434,7 +435,7 @@ public class FlureeCS
                        + "\"IsActive\":\"1\","
 
                        + "\"createddate\":" + ConvertToTimestamp(DateTime.Now) + ""
-                      
+
                        + "}]";
             string resp = sendTransaction(res, servertranurl);
             return resp;
@@ -445,8 +446,8 @@ public class FlureeCS
             return "Error: " + ex.Message;
         }
     }
+    public string checkAccessData(string uploadAgency, string viewerAgency, string documentType)
 
-    public string checkAccessData(string uploadAgency, string viewerAgency,string documentType)
     {
         try
         {
@@ -471,6 +472,34 @@ public class FlureeCS
                 res += ",[\"?user\",\"AgencyFileAccess/documentType\",\"" + documentType
                         + "\"]]}";
 
+
+            string resp = sendTransaction(res, serverqryurl);
+            return resp;
+        }
+        catch (Exception ex)
+        {
+            log.Error("An error occurred.", ex);
+            return "Error: " + ex.Message;
+        }
+    }
+
+
+
+
+    public string checkAccessDataforAGS(string viewerAgency)
+    {
+        try
+        {
+            string res = "{"
+            + "\"select\":{\"?user\":["
+            + "\"uploadAgency\","
+            + "\"viewerAgency\""
+           
+            + "]}," // selecting fields
+            + "\"where\":["
+            + "[\"?user\",\"AgencyFileAccess/viewerAgency\",\"" + viewerAgency + "\"]"
+            + "]"
+            + "}";
             string resp = sendTransaction(res, serverqryurl);
             return resp;
         }
@@ -518,10 +547,10 @@ public class FlureeCS
         }
     }
 
- 
+
 
     #endregion
 
 
-   
+
 }
