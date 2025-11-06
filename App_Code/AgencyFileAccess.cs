@@ -83,4 +83,91 @@ public class AgencyFileAccess : System.Web.Services.WebService
         }
     }
 
+    [WebMethod]
+    public string ViewSmartContractFileAccess()
+    {
+        HttpContext context = HttpContext.Current;
+        context.Response.ContentType = "application/json"; // Force JSON output
+
+        string viewerAgency = HttpContext.Current.Request.Form["viewerAgency"];
+        string SmartContractKey = HttpContext.Current.Request.Form["SmartContractKey"];
+
+        // Validate required fields
+        if (string.IsNullOrEmpty(viewerAgency) || string.IsNullOrEmpty(SmartContractKey))
+            return fl.ToJson(new { message = "Missing required fields." });
+
+        // Validate private key
+        string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
+        if (SmartContractKey != validKey)
+            return fl.ToJson(new { message = "Invalid private key. Access denied." });
+
+        try
+        {
+            // use your same function (passing viewerAgency as needed)
+            string resp = fl.checkAccessDataforAGS(viewerAgency);
+
+            if (resp.StartsWith("Error"))
+                return fl.ToJson(new { message = "Error while fetching data: " + resp });
+
+            DataTable dt = fl.Tabulate(resp);
+            if (dt == null || dt.Rows.Count == 0)
+                return fl.ToJson(new { message = "No records found for this agency." });
+
+            // Return result
+            return fl.ToJson(new
+            {
+                message = "Data fetched successfully.",
+                viewerAgency = viewerAgency,
+                recordCount = dt.Rows.Count,
+                data = dt
+            });
+        }
+        catch (Exception ex)
+        {
+            return fl.ToJson(new { message = "Error: " + ex.Message });
+        }
     }
+
+
+    //[WebMethod]
+    //public string UpdateSmartContractFileAccess()
+    //{
+    //    string uploadAgency = HttpContext.Current.Request.Form["uploadAgency"];
+    //    string viewerAgency = HttpContext.Current.Request.Form["viewerAgency"];
+    //    string documentType = HttpContext.Current.Request.Form["documentType"];
+    //    string newDocumentType = HttpContext.Current.Request.Form["newDocumentType"]; // new value
+    //    string SmartContractKey = HttpContext.Current.Request.Form["SmartContractKey"];
+
+    //    if (string.IsNullOrEmpty(uploadAgency) || string.IsNullOrEmpty(viewerAgency) || string.IsNullOrEmpty(documentType) || string.IsNullOrEmpty(newDocumentType))
+    //        return fl.ToJson(new { message = "Missing required fields." });
+
+    //    string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
+    //    if (SmartContractKey != validKey)
+    //        return fl.ToJson(new { message = "Invalid private key. Access denied." });
+
+    //    try
+    //    {
+    //        // Check if record exists
+    //        string resp = fl.checkAccessData(uploadAgency, viewerAgency, documentType);
+    //        DataTable existing = fl.Tabulate(resp);
+    //        if (existing == null || existing.Rows.Count == 0)
+    //            return fl.ToJson(new { message = "Record not found to update." });
+
+    //        // Update record
+    //        string updateResp = fl.UpdateAgencyAccessFile(uploadAgency, viewerAgency, documentType, newDocumentType);
+    //        if (!updateResp.StartsWith("Error"))
+    //        {
+    //            return fl.ToJson(new { message = "Data Updated Successfully" });
+    //        }
+    //        else
+    //        {
+    //            return fl.ToJson(new { message = "Update failed." });
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return fl.ToJson(new { message = "Error: " + ex.Message });
+    //    }
+    //}
+
+}
