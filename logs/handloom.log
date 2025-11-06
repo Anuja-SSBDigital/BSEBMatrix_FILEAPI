@@ -1,0 +1,64 @@
+2025-11-06 14:34:48,036 [6] INFO FlureeCS - Web request called
+2025-11-06 14:34:48,078 [6] INFO FlureeCS - query :{"select":{"?user":["email","contactno"]},"where":[["?user","AgencyFileAccess/userid","?name"],["?user","usermaster/uploadAgency","Mapple"],["?user","usermaster/viewerAgency","Datacon"],["?user","usermaster/documentType","Attendance A"]]}
+2025-11-06 14:34:48,161 [6] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:34:48,986 [6] ERROR FlureeCS - ************** Error : The remote server returned an error: (400) Bad Request.
+System.Net.WebException: The remote server returned an error: (400) Bad Request.
+   at System.Net.HttpWebRequest.GetResponse()
+   at FlureeCS.sendTransaction(String DatatoPost, String url) in d:\Anuja\Projects\.Net\BSEBMatrix_FILEAPI\App_Code\FlureeCS.cs:line 190
+2025-11-06 14:34:50,048 [6] INFO FlureeCS - Web request called
+2025-11-06 14:34:50,048 [6] INFO FlureeCS - query :[{"_id":"AgencyFileAccess","agencyid":"92179569-dbb1-4112-baa9-7ddfdaa7f64e","uploadAgency":"Mapple","viewerAgency":"Datacon","documentType":"Attendance A","IsActive":"1","createddate":1762439690048}]
+2025-11-06 14:34:50,048 [6] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:34:52,278 [6] INFO FlureeCS - Request executed
+2025-11-06 14:36:21,006 [5] INFO FlureeCS - Web request called
+2025-11-06 14:36:21,011 [5] INFO FlureeCS - query :{"select":{"?user":["email","contactno"]},"where":[["?user","AgencyFileAccess/userid","?name"],["?user","usermaster/uploadAgency","Mapple"],["?user","usermaster/viewerAgency","Datacon"],["?user","usermaster/documentType","Attendance A"]]}
+2025-11-06 14:36:21,013 [5] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:36:21,115 [5] ERROR FlureeCS - ************** Error : The remote server returned an error: (400) Bad Request.
+System.Net.WebException: The remote server returned an error: (400) Bad Request.
+   at System.Net.HttpWebRequest.GetResponse()
+   at FlureeCS.sendTransaction(String DatatoPost, String url) in d:\Anuja\Projects\.Net\BSEBMatrix_FILEAPI\App_Code\FlureeCS.cs:line 190
+2025-11-06 14:36:22,083 [5] INFO FlureeCS - Web request called
+2025-11-06 14:36:22,084 [5] INFO FlureeCS - query :[{"_id":"AgencyFileAccess","agencyid":"b3928a00-a452-4415-9fc0-cb6bf103e2bf","uploadAgency":"Mapple","viewerAgency":"Datacon","documentType":"Attendance A","IsActive":"1","createddate":1762439782083}]
+2025-11-06 14:36:22,084 [5] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:36:22,885 [5] INFO FlureeCS - Request executed
+2025-11-06 14:37:58,239 [6] INFO FlureeCS - Web request called
+2025-11-06 14:37:58,255 [6] INFO FlureeCS - query :{"select":{"?user":["uploadAgency","viewerAgency"]},"where":[["?user","AgencyFileAccess/userid","?name"],["?user","AgencyFileAccess/uploadAgency","Mapple"],["?user","AgencyFileAccess/viewerAgency","Datacon"],["?user","AgencyFileAccess/documentType","Attendance A"]]}
+2025-11-06 14:37:58,290 [6] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:37:59,864 [6] ERROR FlureeCS - ************** Error : The remote server returned an error: (400) Bad Request.
+System.Net.WebException: The remote server returned an error: (400) Bad Request.
+   at System.Net.HttpWebRequest.GetResponse()
+   at FlureeCS.sendTransaction(String DatatoPost, String url) in d:\Anuja\Projects\.Net\BSEBMatrix_FILEAPI\App_Code\FlureeCS.cs:line 190
+2025-11-06 14:38:09,377 [6] INFO FlureeCS - Web request called
+2025-11-06 14:38:09,377 [6] INFO FlureeCS - query :[{"_id":"AgencyFileAccess","agencyid":"bc627d17-f73a-4ba1-b5c0-e70e38bc9bf0","uploadAgency":"Mapple","viewerAgency":"Datacon","documentType":"Attendance A","IsActive":"1","createddate":1762439889377}]
+2025-11-06 14:38:09,378 [6] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:38:11,594 [6] INFO FlureeCS - Request executed
+2025-11-06 14:39:47,616 [5] INFO FlureeCS - Web request called
+2025-11-06 14:39:47,662 [5] INFO FlureeCS - query :{"select":{"?user":["uploadAgency","viewerAgency"]},"where":[["?user","AgencyFileAccess/userid","?name"],["?user","AgencyFileAccess/uploadAgency","Mapple"],["?user","AgencyFileAccess/viewerAgency","Datacon"],["?user","AgencyFileAccess/documentType","Attendance A"]]}
+2025-11-06 14:39:47,689 [5] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:39:47,800 [5] ERROR FlureeCS - ************** Error : The remote server returned an error: (400) Bad Request.
+System.Net.WebException: The remote server returned an error: (400) Bad Request.
+   at System.Net.HttpWebRequest.GetResponse()
+   at FlureeCS.sendTransaction(String DatatoPost, String url) in d:\Anuja\Projects\.Net\BSEBMatrix_FILEAPI\App_Code\FlureeCS.cs:line 190
+2025-11-06 14:39:47,814 [5] INFO FlureeCS - Web request called
+2025-11-06 14:39:47,814 [5] INFO FlureeCS - query :[{"_id":"AgencyFileAccess","agencyid":"79112160-1cd3-4e49-9266-df71b5a8f306","uploadAgency":"Mapple","viewerAgency":"Datacon","documentType":"Attendance A","IsActive":"1","createddate":1762439987814}]
+2025-11-06 14:39:47,814 [5] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:39:48,470 [5] INFO FlureeCS - Request executed
+2025-11-06 14:41:05,828 [6] INFO FlureeCS - Web request called
+2025-11-06 14:41:05,841 [6] INFO FlureeCS - query :{"select":{"?user":["uploadAgency","viewerAgency"]},"where":[["?user","AgencyFileAccess/agencyid","?name"],["?user","AgencyFileAccess/uploadAgency","Mapple"],["?user","AgencyFileAccess/viewerAgency","Datacon"],["?user","AgencyFileAccess/documentType","Attendance A"]]}
+2025-11-06 14:41:05,870 [6] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:41:06,144 [6] INFO FlureeCS - Request executed
+2025-11-06 14:42:54,622 [26] INFO FlureeCS - Web request called
+2025-11-06 14:42:54,640 [26] INFO FlureeCS - query :{"select":{"?user":["uploadAgency","viewerAgency"]},"where":[["?user","AgencyFileAccess/agencyid","?name"],["?user","AgencyFileAccess/uploadAgency","Mapple"],["?user","AgencyFileAccess/viewerAgency","Datacon"],["?user","AgencyFileAccess/documentType","Attendance A"]]}
+2025-11-06 14:42:54,666 [26] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:42:54,754 [26] INFO FlureeCS - Request executed
+2025-11-06 14:44:27,472 [6] INFO FlureeCS - Web request called
+2025-11-06 14:44:27,478 [6] INFO FlureeCS - query :{"select":{"?user":["uploadAgency","viewerAgency"]},"where":[["?user","AgencyFileAccess/agencyid","?name"],["?user","AgencyFileAccess/uploadAgency","Mapple"],["?user","AgencyFileAccess/viewerAgency","Datacon"],["?user","AgencyFileAccess/documentType","Attendance A"]]}
+2025-11-06 14:44:27,479 [6] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:44:28,075 [6] INFO FlureeCS - Request executed
+2025-11-06 14:44:51,543 [6] INFO FlureeCS - Web request called
+2025-11-06 14:44:51,543 [6] INFO FlureeCS - query :{"select":{"?user":["uploadAgency","viewerAgency"]},"where":[["?user","AgencyFileAccess/agencyid","?name"],["?user","AgencyFileAccess/uploadAgency","Mapple"],["?user","AgencyFileAccess/viewerAgency","Antier"],["?user","AgencyFileAccess/documentType","Attendance A"]]}
+2025-11-06 14:44:51,543 [6] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:44:51,594 [6] INFO FlureeCS - Request executed
+2025-11-06 14:44:51,611 [6] INFO FlureeCS - Web request called
+2025-11-06 14:44:51,611 [6] INFO FlureeCS - query :[{"_id":"AgencyFileAccess","agencyid":"97c96050-b949-46db-a676-d4b14adfa10f","uploadAgency":"Mapple","viewerAgency":"Antier","documentType":"Attendance A","IsActive":"1","createddate":1762440291611}]
+2025-11-06 14:44:51,612 [6] INFO FlureeCS - GetRequestStream function called
+2025-11-06 14:44:53,759 [6] INFO FlureeCS - Request executed
