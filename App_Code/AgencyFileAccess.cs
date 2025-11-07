@@ -181,14 +181,31 @@ public class AgencyFileAccess : System.Web.Services.WebService
             // Insert into FlureeDB (custom method)
             string resp = fl.InsertTofiledetails(subdoctype, actualfilename, filename, filehash, agencyname);
 
-            if (resp.StartsWith("Error"))
-                return fl.ToJson(new { message = "Error while inserting data: " + resp });
-
-            return fl.ToJson(new
+            if (!resp.StartsWith("Error"))
             {
-                message = "File details inserted successfully.",
-                response = resp
-            });
+                DataTable dtdata = fl.Tabulate("[" + resp + "]");
+                if (dtdata.Rows.Count > 0)
+                {
+                    if (dtdata.Rows[0]["status"].ToString() == "200")
+                    {
+                        return fl.ToJson(new { message = "File details inserted successfully" });
+
+                    }
+                    else
+                    {
+                        return fl.ToJson(new { message = "Details Not Added Successfully" });
+
+                    }
+                }
+                else
+                {
+                    return fl.ToJson(new { message = "Details Not Added Successfully" });
+                }
+            }
+            else
+            {
+                return fl.ToJson(new { message = "Details Not Added Successfully" });
+            }
         }
         catch (Exception ex)
         {
