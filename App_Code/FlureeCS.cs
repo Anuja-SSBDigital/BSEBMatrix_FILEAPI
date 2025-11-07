@@ -483,6 +483,33 @@ public class FlureeCS
         }
     }
 
+    public string InsertTofiledetails(string subdoctype, string actualfilename, string filename, string filehash, string agencyname)
+    {
+        try
+        {
+            // Create JSON body for Fluree transaction
+            string status = "Active";
+            string res = "[{\"_id\":\"filedetails\","
+                       + "\"fileid\":\"" + Guid.NewGuid() + "\","
+                       + "\"subdoctype\":\"" + subdoctype + "\","
+                       + "\"actualfilename\":\"" + actualfilename + "\","
+                       + "\"filename\":\"" + filename + "\","
+                       + "\"filehash\":\"" + filehash + "\","
+                       + "\"agencyname\":\"" + agencyname + "\","
+                       + "\"status\":\"" + status + "\","
+                       + "\"createddate\":" + ConvertToTimestamp(DateTime.Now)
+                       + "}]";
+
+            // Send to Fluree transaction URL
+            string resp = sendTransaction(res, servertranurl);
+            return resp;
+        }
+        catch (Exception ex)
+        {
+            log.Error("An unexpected error occurred.", ex);
+            return "Error: " + ex.Message;
+        }
+    }
 
 
 
@@ -510,39 +537,25 @@ public class FlureeCS
         }
     }
 
-    public string Updateprddetailsdata(string qrcodevalue, string productname, string weavername, string devicecode, string image, string video, string imagehash, string videohash, string dimension, string dyestatus, string nature_dye, string weavetype, string yarntype, string yarncount, string loomtype, string GITag)
+    public string CheckFileHashExists(string filehash)
     {
         try
         {
-            string ProductName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(productname);
-            string WeaverName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(weavername);
+            string res = "{"
+                       + "\"select\":{\"?file\":["
+                       + "\"filehash\","
+                       + "\"filename\","
+                       + "\"agencyname\""
+                       + "]},"
+                       + "\"where\":[[\"?file\",\"filedetails/filehash\",\"" + filehash + "\"]]"
+                       + "}";
 
-            string res = "[{";
-            res += "\"_id\":[\"productdetailsmaster/qrcodevalue\",\"" + qrcodevalue + "\"],"
-            + "\"productname\":\"" + ProductName + "\","
-            + "\"weavername\":\"" + WeaverName + "\","
-            + "\"devicecode\":\"" + devicecode + "\","
-            + "\"image\":\"" + image + "\","
-            + "\"video\":\"" + video + "\","
-            + "\"dimension\":\"" + dimension + "\","
-            + "\"dyestatus\":\"" + dyestatus + "\","
-            + "\"nature_dye\":\"" + nature_dye + "\","
-            + "\"weavetype\":\"" + weavetype + "\","
-            + "\"yarntype\":\"" + yarntype + "\","
-            + "\"yarncount\":\"" + yarncount + "\","
-            + "\"loomtype\":\"" + loomtype + "\","
-            + "\"imagehash\":\"" + imagehash + "\","
-            + "\"videohash\":\"" + videohash + "\","
-            + "\"GITag\":\"" + GITag + "\","
-             + "\"status\":\"Scan\","
-            + "\"updateddate\":" + ConvertToTimestamp(DateTime.Now) + ""
-             + "}]";
-            string resp = sendTransaction(res, servertranurl);
+            string resp = sendTransaction(res, serverqryurl);
             return resp;
         }
         catch (Exception ex)
         {
-            log.Error("An unexpected error occurred.", ex);
+            log.Error("An error occurred while checking file hash.", ex);
             return "Error: " + ex.Message;
         }
     }
