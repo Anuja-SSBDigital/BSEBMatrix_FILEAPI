@@ -179,6 +179,17 @@ public class AgencyFileAccess : System.Web.Services.WebService
             //    string flureeData = Newtonsoft.Json.JsonConvert.SerializeObject(fileData);
 
             // Insert into FlureeDB (custom method)
+
+            string checkResp = fl.CheckFileHashExists(filehash);
+            if (!checkResp.StartsWith("Error"))
+            {
+                DataTable dtExisting = fl.Tabulate(checkResp);
+                if (dtExisting != null && dtExisting.Rows.Count > 0)
+                {
+                    return fl.ToJson(new { message = "Duplicate filehash found. Record already exists." });
+                }
+            }
+
             string resp = fl.InsertTofiledetails(subdoctype, actualfilename, filename, filehash, agencyname);
 
             if (!resp.StartsWith("Error"))
