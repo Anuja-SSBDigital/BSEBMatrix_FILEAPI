@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IdentityModel.Protocols.WSTrust;
+using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Script.Services;
 using System.Web.Services;
 
 /// <summary>
@@ -127,6 +130,72 @@ public class AgencyFileAccess : System.Web.Services.WebService
             return fl.ToJson(new { message = "Error: " + ex.Message });
         }
     }
+
+    [WebMethod]
+    public string InsertFileDetails()
+    {
+        HttpContext context = HttpContext.Current;
+
+        string SmartContractKey = context.Request.Form["SmartContractKey"];
+        string subdoctype = context.Request.Form["subdoctype"];
+        string actualfilename = context.Request.Form["actualfilename"];
+        string filename = context.Request.Form["filename"];
+        string filehash = context.Request.Form["filehash"];
+        string agencyname = context.Request.Form["agencyname"];
+
+        // Validate required fields
+        if (string.IsNullOrEmpty(SmartContractKey) || string.IsNullOrEmpty(agencyname) ||
+            string.IsNullOrEmpty(filename) || string.IsNullOrEmpty(filehash))
+        {
+            return fl.ToJson(new { message = "Missing required fields." });
+        }
+
+        // Validate private key
+        string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
+        if (SmartContractKey != validKey)
+        {
+            return fl.ToJson(new { message = "Invalid SmartContractKey. Access denied." });
+        }
+
+        try
+        {
+            // Prepare file record
+            //    var fileData = new List<object>
+            //{
+            //    new Dictionary<string, object>
+            //    {
+            //        { "_id", "filedetails" },
+            //        { "filedetails/subdoctype", subdoctype },
+            //        { "filedetails/actualfilename", actualfilename },
+            //        { "filedetails/filename", filename },
+            //        { "filedetails/filehash", filehash },
+            //        { "filedetails/agencyname", agencyname },
+            //        { "filedetails/status", status },
+            //        { "filedetails/createddate", DateTime.UtcNow.ToString("o") }
+            //    }
+            //};
+
+            //    // Convert to JSON for Fluree insertion
+            //    string flureeData = Newtonsoft.Json.JsonConvert.SerializeObject(fileData);
+
+            // Insert into FlureeDB (custom method)
+            string resp = fl.InsertTofiledetails(subdoctype, actualfilename, filename, filehash, agencyname);
+
+            if (resp.StartsWith("Error"))
+                return fl.ToJson(new { message = "Error while inserting data: " + resp });
+
+            return fl.ToJson(new
+            {
+                message = "File details inserted successfully.",
+                response = resp
+            });
+        }
+        catch (Exception ex)
+        {
+            return fl.ToJson(new { message = "Error: " + ex.Message });
+        }
+    }
+
 
 
     //[WebMethod]
