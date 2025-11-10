@@ -224,6 +224,49 @@ public class AgencyFileAccess : System.Web.Services.WebService
         }
     }
 
+    [WebMethod]
+    public string GenerateFileHash()
+    {
+        HttpContext context = HttpContext.Current;
+
+        string SmartContractKey = context.Request.Form["SmartContractKey"];
+        HttpPostedFile uploadedFile = context.Request.Files["file"];
+
+        // Validate fields
+        if (string.IsNullOrEmpty(SmartContractKey) || uploadedFile == null)
+        {
+            return fl.ToJson(new { message = "Missing SmartContractKey or file." });
+        }
+
+        // Validate private key
+        string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
+        if (SmartContractKey != validKey)
+        {
+            return fl.ToJson(new { message = "Invalid SmartContractKey. Access denied." });
+        }
+
+        try
+        {
+            // ✅ Compute SHA256 hash
+            string hashValue;
+            using (Stream fileStream = uploadedFile.InputStream)
+            {
+                hashValue = fl.SHA256CheckSum(fileStream);
+            }
+
+            // ✅ Return response (no DB insert)
+            return fl.ToJson(new
+            {
+                message = "File hash generated successfully.",
+                filename = uploadedFile.FileName,
+                sha256 = hashValue
+            });
+        }
+        catch (Exception ex)
+        {
+            return fl.ToJson(new { message = "Error: " + ex.Message });
+        }
+    }
 
 
     //[WebMethod]
