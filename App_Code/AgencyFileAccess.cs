@@ -85,8 +85,6 @@ public class AgencyFileAccess : System.Web.Services.WebService
             return fl.ToJson(new { message = "Error: " + ex.Message });
         }
     }
-
-    [WebMethod]
     public string ViewSmartContractFileAccess()
     {
         HttpContext context = HttpContext.Current;
@@ -119,9 +117,6 @@ public class AgencyFileAccess : System.Web.Services.WebService
             // Return result
             return fl.ToJson(new
             {
-                message = "Data fetched successfully.",
-                viewerAgency = viewerAgency,
-                recordCount = dt.Rows.Count,
                 data = dt
             });
         }
@@ -130,6 +125,50 @@ public class AgencyFileAccess : System.Web.Services.WebService
             return fl.ToJson(new { message = "Error: " + ex.Message });
         }
     }
+    //[WebMethod]
+    //public string ViewSmartContractFileAccess()
+    //{
+    //    HttpContext context = HttpContext.Current;
+    //    context.Response.ContentType = "application/json"; // Force JSON output
+
+    //    string viewerAgency = HttpContext.Current.Request.Form["viewerAgency"];
+    //    string SmartContractKey = HttpContext.Current.Request.Form["SmartContractKey"];
+
+    //    // Validate required fields
+    //    if (string.IsNullOrEmpty(viewerAgency) || string.IsNullOrEmpty(SmartContractKey))
+    //        return fl.ToJson(new { message = "Missing required fields." });
+
+    //    // Validate private key
+    //    string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
+    //    if (SmartContractKey != validKey)
+    //        return fl.ToJson(new { message = "Invalid private key. Access denied." });
+
+    //    try
+    //    {
+    //        // use your same function (passing viewerAgency as needed)
+    //        string resp = fl.checkAccessDataforAGS(viewerAgency);
+
+    //        if (resp.StartsWith("Error"))
+    //            return fl.ToJson(new { message = "Error while fetching data: " + resp });
+
+    //        DataTable dt = fl.Tabulate(resp);
+    //        if (dt == null || dt.Rows.Count == 0)
+    //            return fl.ToJson(new { message = "No records found for this agency." });
+
+    //        // Return result
+    //        return fl.ToJson(new
+    //        {
+    //            message = "Data fetched successfully.",
+    //            viewerAgency = viewerAgency,
+    //            recordCount = dt.Rows.Count,
+    //            data = dt
+    //        });
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return fl.ToJson(new { message = "Error: " + ex.Message });
+    //    }
+    //}
 
     [WebMethod]
     public string InsertFileDetails()
@@ -144,12 +183,14 @@ public class AgencyFileAccess : System.Web.Services.WebService
         string agencyname = context.Request.Form["agencyname"];
 
         // Validate required fields
-        if (string.IsNullOrEmpty(SmartContractKey) || string.IsNullOrEmpty(agencyname) ||
-            string.IsNullOrEmpty(filename) || string.IsNullOrEmpty(filehash))
+        if (string.IsNullOrEmpty(SmartContractKey) || string.IsNullOrEmpty(subdoctype) ||
+     string.IsNullOrEmpty(actualfilename) ||
+     string.IsNullOrEmpty(filename) ||
+     string.IsNullOrEmpty(filehash) ||
+     string.IsNullOrEmpty(agencyname))
         {
-            return fl.ToJson(new { message = "Missing required fields." });
+            return fl.ToJson(new { message = "Missing required fields. Please provide all parameters" });
         }
-
         // Validate private key
         string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
         if (SmartContractKey != validKey)
