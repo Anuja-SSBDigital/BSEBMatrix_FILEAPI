@@ -446,8 +446,6 @@ public class FlureeCS
             return "Error: " + ex.Message;
         }
     }
-
-
     public string checkAccessDataforAGS(string viewerAgency)
     {
         try
@@ -455,7 +453,8 @@ public class FlureeCS
             string res = "{"
             + "\"select\":{\"?user\":["
             + "\"uploadAgency\","
-            + "\"viewerAgency\""
+            + "\"viewerAgency\","
+            + "\"documentType\""
 
             + "]}," // selecting fields
             + "\"where\":["
@@ -471,6 +470,30 @@ public class FlureeCS
             return "Error: " + ex.Message;
         }
     }
+
+    //public string checkAccessDataforAGS(string viewerAgency)
+    //{
+    //    try
+    //    {
+    //        string res = "{"
+    //        + "\"select\":{\"?user\":["
+    //        + "\"uploadAgency\","
+    //        + "\"viewerAgency\""
+
+    //        + "]}," // selecting fields
+    //        + "\"where\":["
+    //        + "[\"?user\",\"AgencyFileAccess/viewerAgency\",\"" + viewerAgency + "\"]"
+    //        + "]"
+    //        + "}";
+    //        string resp = sendTransaction(res, serverqryurl);
+    //        return resp;
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        log.Error("An error occurred.", ex);
+    //        return "Error: " + ex.Message;
+    //    }
+    //}
 
     public string CheckFileHashExists(string filehash)
     {
