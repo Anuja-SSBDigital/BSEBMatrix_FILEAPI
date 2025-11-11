@@ -1,4 +1,5 @@
 ﻿using iText.Commons.Bouncycastle.Crypto;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -85,106 +86,88 @@ public class AgencyFileAccess : System.Web.Services.WebService
     //        return fl.ToJson(new { message = "Error: " + ex.Message });
     //    }
     //}
+
+
+
     [WebMethod]
-    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
     public string AddSmartContractFileAccess()
     {
-        HttpContext context = HttpContext.Current;
-        context.Response.ContentType = "application/json";
-
         try
         {
-            // 🔹 SmartContractKey from form-data (for authentication)
-            string SmartContractKey = context.Request.Form["SmartContractKey"];
+            HttpContext context = HttpContext.Current;
 
-            if (string.IsNullOrEmpty(SmartContractKey))
+            string uploadAgency = context.Request.Form["uploadAgency"];
+            string SmartContractKey = context.Request.Form["SmartContractKey"];
+            string recordsJson = context.Request.Form["records"]; // 👈 multiple data as JSON array
+
+            if (string.IsNullOrEmpty(uploadAgency) || string.IsNullOrEmpty(SmartContractKey) || string.IsNullOrEmpty(recordsJson))
             {
-                return fl.ToJson(new { message = "Missing SmartContractKey." });
+                return fl.ToJson(new { message = "Missing required fields." });
             }
 
-            // 🔹 Validate SmartContractKey
+            // ✅ Validate private key
             string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
             if (SmartContractKey != validKey)
             {
-                return fl.ToJson(new { message = "Invalid SmartContractKey. Access denied." });
+                return fl.ToJson(new { message = "Invalid private key. Access denied." });
             }
 
-            // 🔹 Read JSON array from raw body
-            string jsonData;
-            using (var reader = new StreamReader(context.Request.InputStream))
+            // ✅ Parse JSON array
+            JArray records = JArray.Parse(recordsJson);
+            int successCount = 0, failCount = 0;
+
+            foreach (JObject record in records)
             {
-                jsonData = reader.ReadToEnd();
-            }
+                string viewerAgency = (string)record["viewerAgency"];
+                string documentType = (string)record["documentType"];
 
-            if (string.IsNullOrEmpty(jsonData))
-            {
-                return fl.ToJson(new { message = "Empty or invalid JSON payload." });
-            } 
-
-            // 🔹 Deserialize JSON array
-            var records = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(jsonData);
-            if (records == null || records.Count == 0)
-            {
-                return fl.ToJson(new { message = "No records found in JSON payload." });
-            }
-
-            List<object> results = new List<object>();
-
-            // 🔹 Loop through all JSON records
-            foreach (var record in records)
-            {
-                string uploadAgency = record.ContainsKey("uploadAgency") ? record["uploadAgency"] : null;
-                string viewerAgency = record.ContainsKey("viewerAgency") ? record["viewerAgency"] : null;
-                string documentType = record.ContainsKey("documentType") ? record["documentType"] : null;
-
-                // 🔸 Validate required fields
-                if (string.IsNullOrEmpty(uploadAgency) || string.IsNullOrEmpty(viewerAgency) || string.IsNullOrEmpty(documentType))
+                if (string.IsNullOrEmpty(viewerAgency) || string.IsNullOrEmpty(documentType))
                 {
-                    results.Add(new { uploadAgency, viewerAgency, documentType, message = "Missing required fields." });
+                    failCount++;
                     continue;
                 }
 
-                // 🔸 Check if record already exists
+                // 🧠 Check existing
                 string resp = fl.checkAccessData(uploadAgency, viewerAgency, documentType);
                 if (!resp.StartsWith("Error"))
                 {
                     DataTable existing = fl.Tabulate(resp);
                     if (existing != null && existing.Rows.Count > 0)
                     {
-                        results.Add(new { uploadAgency, viewerAgency, documentType, message = "Record already exists." });
+                        failCount++;
                         continue;
                     }
                 }
 
-                // 🔸 Insert new record
-                string insertResp = fl.InsertAgencyAccessFile(uploadAgency, viewerAgency, documentType);
-
-                if (!insertResp.StartsWith("Error"))
+                // 🧩 Insert
+                string res = fl.InsertAgencyAccessFile(uploadAgency, viewerAgency, documentType);
+                if (!res.StartsWith("Error"))
                 {
-                    DataTable dtdata = fl.Tabulate("[" + insertResp + "]");
+                    DataTable dtdata = fl.Tabulate("[" + res + "]");
                     if (dtdata.Rows.Count > 0 && dtdata.Rows[0]["status"].ToString() == "200")
-                    {
-                        results.Add(new { uploadAgency, viewerAgency, documentType, message = "Data added successfully." });
-                    }
+                        successCount++;
                     else
-                    {
-                        results.Add(new { uploadAgency, viewerAgency, documentType, message = "Insert failed." });
-                    }
+                        failCount++;
                 }
                 else
                 {
-                    results.Add(new { uploadAgency, viewerAgency, documentType, message = "Transaction error." });
+                    failCount++;
                 }
             }
 
-            // ✅ Return final response
-            return fl.ToJson(new { message = "Processed all records.", total = results.Count, result = results });
+            return fl.ToJson(new
+            {
+                message = "Bulk Insert Completed",
+                success = successCount,
+                failed = failCount
+            });
         }
         catch (Exception ex)
         {
             return fl.ToJson(new { message = "Error: " + ex.Message });
         }
     }
+
 
 
     public string ViewSmartContractFileAccess()
