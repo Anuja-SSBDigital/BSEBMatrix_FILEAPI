@@ -102,7 +102,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
 
             if (string.IsNullOrEmpty(uploadAgency) || string.IsNullOrEmpty(SmartContractKey) || string.IsNullOrEmpty(recordsJson))
             {
-                return fl.ToJson(new { message = "Missing required fields." });
+                return fl.ToJson(new { message = "Missing required fields.", status = 400 });
             }
 
             // ✅ Validate private key
@@ -147,7 +147,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
                     if (dtdata.Rows.Count > 0 && dtdata.Rows[0]["status"].ToString() == "200")
                         successCount++;
                     else
-                        failCount++;
+                        failCount++;  
                 }
                 else
                 {
@@ -157,9 +157,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
 
             return fl.ToJson(new
             {
-                message = "Bulk Insert Completed",
-                success = successCount,
-                failed = failCount
+                message = "Data Added Successfully"
             });
         }
         catch (Exception ex)
