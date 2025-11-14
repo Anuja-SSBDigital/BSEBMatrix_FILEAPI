@@ -134,8 +134,11 @@ public class AgencyFileAccess : System.Web.Services.WebService
                     DataTable existing = fl.Tabulate(resp);
                     if (existing != null && existing.Rows.Count > 0)
                     {
-                        failCount++;
-                        continue;
+                        return fl.ToJson(new
+                        {
+                            message = "Record already exists.",
+                            status = 409
+                        });
                     }
                 }
 
