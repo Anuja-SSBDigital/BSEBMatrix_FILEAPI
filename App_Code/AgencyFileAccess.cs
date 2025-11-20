@@ -88,7 +88,6 @@ public class AgencyFileAccess : System.Web.Services.WebService
     //}
 
 
-
     [WebMethod]
     public string AddSmartContractFileAccess()
     {
@@ -98,22 +97,55 @@ public class AgencyFileAccess : System.Web.Services.WebService
 
             string uploadAgency = context.Request.Form["uploadAgency"];
             string SmartContractKey = context.Request.Form["SmartContractKey"];
-            string recordsJson = context.Request.Form["records"]; // 👈 multiple data as JSON array
+            string recordsJson = context.Request.Form["records"]; // JSON array: viewerAgency + documentType
 
-            if (string.IsNullOrEmpty(uploadAgency) || string.IsNullOrEmpty(SmartContractKey) || string.IsNullOrEmpty(recordsJson))
+            // 1️⃣ Missing fields check
+            if (string.IsNullOrEmpty(uploadAgency) ||
+                string.IsNullOrEmpty(SmartContractKey) ||
+                string.IsNullOrEmpty(recordsJson))
             {
-                return fl.ToJson(new { message = "Missing required fields.", status = 400 });
+                return fl.ToJson(new
+                {
+                    status = 400,
+                    message = "Missing required fields. (uploadAgency / SmartContractKey / records)"
+                });
             }
 
-            // ✅ Validate private key
+            // 2️⃣ Validate private key
             string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
             if (SmartContractKey != validKey)
             {
-                return fl.ToJson(new { message = "Invalid private key. Access denied." });
+                return fl.ToJson(new
+                {
+                    status = 401,
+                    message = "Invalid SmartContractKey. Access denied."
+                });
             }
 
-            // ✅ Parse JSON array
-            JArray records = JArray.Parse(recordsJson);
+            // 3️⃣ Parse JSON array
+            JArray records;
+            try
+            {
+                records = JArray.Parse(recordsJson);
+            }
+            catch
+            {
+                return fl.ToJson(new
+                {
+                    status = 422,
+                    message = "Invalid JSON format. Please pass valid JSON array."
+                });
+            }
+
+            if (records.Count == 0)
+            {
+                return fl.ToJson(new
+                {
+                    status = 422,
+                    message = "Records array is empty."
+                });
+            }
+
             int successCount = 0, failCount = 0;
 
             foreach (JObject record in records)
@@ -121,14 +153,16 @@ public class AgencyFileAccess : System.Web.Services.WebService
                 string viewerAgency = (string)record["viewerAgency"];
                 string documentType = (string)record["documentType"];
 
+                // 4️⃣ Validation inside each record
                 if (string.IsNullOrEmpty(viewerAgency) || string.IsNullOrEmpty(documentType))
                 {
                     failCount++;
                     continue;
                 }
 
-                // 🧠 Check existing
+                // 5️⃣ Check if record already exists
                 string resp = fl.checkAccessData(uploadAgency, viewerAgency, documentType);
+
                 if (!resp.StartsWith("Error"))
                 {
                     DataTable existing = fl.Tabulate(resp);
@@ -136,38 +170,154 @@ public class AgencyFileAccess : System.Web.Services.WebService
                     {
                         return fl.ToJson(new
                         {
+                            status = 409,
                             message = "Record already exists.",
-                            status = 409
+                            viewerAgency = viewerAgency,
+                            documentType = documentType
                         });
                     }
                 }
-
-                // 🧩 Insert
-                string res = fl.InsertAgencyAccessFile(uploadAgency, viewerAgency, documentType);
-                if (!res.StartsWith("Error"))
+                else if (resp == "Error : Unable to connect to the remote server")
                 {
-                    DataTable dtdata = fl.Tabulate("[" + res + "]");
-                    if (dtdata.Rows.Count > 0 && dtdata.Rows[0]["status"].ToString() == "200")
-                        successCount++;
-                    else
-                        failCount++;  
+
+                    return fl.ToJson(new { message = "Unable to connect to the remote server" });
                 }
                 else
                 {
-                    failCount++;
+                    return fl.ToJson(new { message = "Something Went Wrong." });
+
                 }
+                // 6️⃣ Insert Record
+                string insertResp = fl.InsertAgencyAccessFile(uploadAgency, viewerAgency, documentType);
+
+                // ❗ Specific server connectivity issue
+                if (insertResp == "Error : Unable to connect to the remote server")
+                {
+                    return fl.ToJson(new
+                    {
+                        status = 503,
+                        message = "Unable to connect to the remote server"
+                    });
+                }
+
+                // ❗ General error returned by insert function
+                if (insertResp.StartsWith("Error"))
+                {
+                    failCount++;
+                    continue;
+                }
+
+                // Process insert result
+                DataTable dtdata = fl.Tabulate("[" + insertResp + "]");
+                if (dtdata.Rows.Count > 0 && dtdata.Rows[0]["status"].ToString() == "200")
+                    successCount++;
+                else
+                    failCount++;
             }
 
+            // ================================
+            // 🎉 3️⃣ FINAL SUCCESS RESPONSE
+            // ================================
             return fl.ToJson(new
             {
-                message = "Data Added Successfully"
+                status = 200,
+                message = "Data Added Successfully.",
+                total = records.Count,
+                success = successCount,
+                failed = failCount
             });
         }
         catch (Exception ex)
         {
-            return fl.ToJson(new { message = "Error: " + ex.Message });
+            // 8️⃣ Unexpected error
+            return fl.ToJson(new
+            {
+                status = 500,
+                message = "Internal Server Error",
+                error = ex.Message
+            });
         }
     }
+
+    //[WebMethod]
+    //public string AddSmartContractFileAccess()
+    //{
+    //    try
+    //    {
+    //        HttpContext context = HttpContext.Current;
+
+    //        string uploadAgency = context.Request.Form["uploadAgency"];
+    //        string SmartContractKey = context.Request.Form["SmartContractKey"];
+    //        string recordsJson = context.Request.Form["records"]; // 👈 multiple data as JSON array
+
+    //        if (string.IsNullOrEmpty(uploadAgency) || string.IsNullOrEmpty(SmartContractKey) || string.IsNullOrEmpty(recordsJson))
+    //        {
+    //            return fl.ToJson(new { message = "Missing required fields.", status = 400 });
+    //        }
+
+    //        // ✅ Validate private key
+    //        string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
+    //        if (SmartContractKey != validKey)
+    //        {
+    //            return fl.ToJson(new { message = "Invalid private key. Access denied." });
+    //        }
+
+    //        // ✅ Parse JSON array
+    //        JArray records = JArray.Parse(recordsJson);
+    //        int successCount = 0, failCount = 0;
+
+    //        foreach (JObject record in records)
+    //        {
+    //            string viewerAgency = (string)record["viewerAgency"];
+    //            string documentType = (string)record["documentType"];
+
+    //            if (string.IsNullOrEmpty(viewerAgency) || string.IsNullOrEmpty(documentType))
+    //            {
+    //                failCount++;
+    //                continue;
+    //            }
+
+    //            // 🧠 Check existing
+    //            string resp = fl.checkAccessData(uploadAgency, viewerAgency, documentType);
+    //            if (!resp.StartsWith("Error"))
+    //            {
+    //                DataTable existing = fl.Tabulate(resp);
+    //                if (existing != null && existing.Rows.Count > 0)
+    //                {
+    //                    return fl.ToJson(new
+    //                    {
+    //                        message = "Record already exists.",
+    //                        status = 409
+    //                    });
+    //                }
+    //            }
+
+    //            // 🧩 Insert
+    //            string res = fl.InsertAgencyAccessFile(uploadAgency, viewerAgency, documentType);
+    //            if (!res.StartsWith("Error"))
+    //            {
+    //                DataTable dtdata = fl.Tabulate("[" + res + "]");
+    //                if (dtdata.Rows.Count > 0 && dtdata.Rows[0]["status"].ToString() == "200")
+    //                    successCount++;
+    //                else
+    //                    failCount++;  
+    //            }
+    //            else
+    //            {
+    //                failCount++;
+    //            }
+    //        }
+
+    //        return fl.ToJson(new
+    //        {
+    //            message = "Data Added Successfully"
+    //        });
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return fl.ToJson(new { message = "Error: " + ex.Message });
+    //    }
+    //}
 
 
 
