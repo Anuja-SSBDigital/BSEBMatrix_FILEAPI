@@ -324,41 +324,78 @@ public class AgencyFileAccess : System.Web.Services.WebService
     public string ViewSmartContractFileAccess()
     {
         HttpContext context = HttpContext.Current;
-        context.Response.ContentType = "application/json"; // Force JSON output
+        context.Response.ContentType = "application/json"; // Ensure JSON response
 
         string viewerAgency = HttpContext.Current.Request.Form["viewerAgency"];
         string SmartContractKey = HttpContext.Current.Request.Form["SmartContractKey"];
 
-        // Validate required fields
+        // 1️⃣ Validate required fields
         if (string.IsNullOrEmpty(viewerAgency) || string.IsNullOrEmpty(SmartContractKey))
-            return fl.ToJson(new { message = "Missing required fields." });
+            return fl.ToJson(new { status = 400, message = "Missing required fields." });
 
-        // Validate private key
+        // 2️⃣ Validate private key
         string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
         if (SmartContractKey != validKey)
-            return fl.ToJson(new { message = "Invalid private key. Access denied." });
+            return fl.ToJson(new { status = 401, message = "Invalid private key. Access denied." });
 
         try
         {
-            // use your same function (passing viewerAgency as needed)
+            // 3️⃣ Fetch data using your function
             string resp = fl.checkAccessDataforAGS(viewerAgency);
 
+            // ===============================
+            // 🔥 ERROR HANDLING FOR RESPONSE
+            // ===============================
+
+            // ❗ Remote server connectivity issue
+            if (resp == "Error : Unable to connect to the remote server")
+            {
+                return fl.ToJson(new
+                {
+                    status = 503,
+                    message = "Unable to connect to the remote server."
+                });
+            }
+
+            // ❗ Other errors
             if (resp.StartsWith("Error"))
-                return fl.ToJson(new { message = "Error while fetching data: " + resp });
+            {
+                return fl.ToJson(new
+                {
+                    status = 500,
+                    message = "Error while fetching data: " + resp
+                });
+            }
 
+            // 4️⃣ Convert to DataTable
             DataTable dt = fl.Tabulate(resp);
-            if (dt == null || dt.Rows.Count == 0)
-                return fl.ToJson(new { message = "No records found for this agency." });
 
-            // Return result
+            if (dt == null || dt.Rows.Count == 0)
+            {
+                return fl.ToJson(new
+                {
+                    status = 404,
+                    message = "No records found for this agency."
+                });
+            }
+
+            // 5️⃣ SUCCESS RESPONSE
             return fl.ToJson(new
             {
+                status = 200,
+                
                 data = dt
             });
         }
         catch (Exception ex)
         {
-            return fl.ToJson(new { message = "Error: " + ex.Message });
+            // 6️⃣ Unexpected error
+            return fl.ToJson(new
+            {
+                status = 500,
+                message = "Internal Server Error",
+                error = ex.Message
+            });
         }
     }
     //[WebMethod]
