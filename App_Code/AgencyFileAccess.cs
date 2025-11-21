@@ -3,9 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IdentityModel.Protocols.WSTrust;
 using System.IO;
-using System.Linq;
 using System.Web;
 using System.Web.Script.Services;
 using System.Web.Services;
@@ -106,7 +104,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             {
                 return fl.ToJson(new
                 {
-                    status = 400,
+                    
                     message = "Missing required fields. (uploadAgency / SmartContractKey / records)"
                 });
             }
@@ -117,7 +115,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             {
                 return fl.ToJson(new
                 {
-                    status = 401,
+                   
                     message = "Invalid SmartContractKey. Access denied."
                 });
             }
@@ -132,7 +130,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             {
                 return fl.ToJson(new
                 {
-                    status = 422,
+                    
                     message = "Invalid JSON format. Please pass valid JSON array."
                 });
             }
@@ -141,7 +139,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             {
                 return fl.ToJson(new
                 {
-                    status = 422,
+                    
                     message = "Records array is empty."
                 });
             }
@@ -170,10 +168,8 @@ public class AgencyFileAccess : System.Web.Services.WebService
                     {
                         return fl.ToJson(new
                         {
-                            status = 409,
-                            message = "Record already exists.",
-                            viewerAgency = viewerAgency,
-                            documentType = documentType
+                           
+                            message = "Record already exists."
                         });
                     }
                 }
@@ -195,7 +191,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
                 {
                     return fl.ToJson(new
                     {
-                        status = 503,
+                       
                         message = "Unable to connect to the remote server"
                     });
                 }
@@ -218,13 +214,19 @@ public class AgencyFileAccess : System.Web.Services.WebService
             // ================================
             // 🎉 3️⃣ FINAL SUCCESS RESPONSE
             // ================================
+
+            if (successCount == 0)
+            {
+                return fl.ToJson(new
+                {
+                    message = "Data Not Added Successfully."
+                });
+            }
             return fl.ToJson(new
             {
-                status = 200,
+                
                 message = "Data Added Successfully.",
-                total = records.Count,
-                success = successCount,
-                failed = failCount
+               
             });
         }
         catch (Exception ex)
@@ -232,9 +234,9 @@ public class AgencyFileAccess : System.Web.Services.WebService
             // 8️⃣ Unexpected error
             return fl.ToJson(new
             {
-                status = 500,
-                message = "Internal Server Error",
-                error = ex.Message
+  
+                message = "Error: " + ex.Message
+
             });
         }
     }
@@ -336,7 +338,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
         // 2️⃣ Validate private key
         string validKey = "BSEB#Matrix@SmartKey-7A3C1B8E92FD";
         if (SmartContractKey != validKey)
-            return fl.ToJson(new { status = 401, message = "Invalid private key. Access denied." });
+            return fl.ToJson(new { status = 401, message = "Invalid SmartContractKey. Access denied." });
 
         try
         {
@@ -352,7 +354,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             {
                 return fl.ToJson(new
                 {
-                    status = 503,
+                    
                     message = "Unable to connect to the remote server."
                 });
             }
@@ -362,7 +364,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             {
                 return fl.ToJson(new
                 {
-                    status = 500,
+                   
                     message = "Error while fetching data: " + resp
                 });
             }
@@ -374,7 +376,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             {
                 return fl.ToJson(new
                 {
-                    status = 404,
+                   
                     message = "No records found for this agency."
                 });
             }
@@ -382,7 +384,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             // 5️⃣ SUCCESS RESPONSE
             return fl.ToJson(new
             {
-                status = 200,
+                
                 
                 data = dt
             });
@@ -392,9 +394,8 @@ public class AgencyFileAccess : System.Web.Services.WebService
             // 6️⃣ Unexpected error
             return fl.ToJson(new
             {
-                status = 500,
-                message = "Internal Server Error",
-                error = ex.Message
+                
+                message = "Error: " + ex.Message
             });
         }
     }
@@ -473,36 +474,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
 
         try
         {
-            // Prepare file record
-            //    var fileData = new List<object>
-            //{
-            //    new Dictionary<string, object>
-            //    {
-            //        { "_id", "filedetails" },
-            //        { "filedetails/subdoctype", subdoctype },
-            //        { "filedetails/actualfilename", actualfilename },
-            //        { "filedetails/filename", filename },
-            //        { "filedetails/filehash", filehash },
-            //        { "filedetails/agencyname", agencyname },
-            //        { "filedetails/status", status },
-            //        { "filedetails/createddate", DateTime.UtcNow.ToString("o") }
-            //    }
-            //};
-
-            //    // Convert to JSON for Fluree insertion
-            //    string flureeData = Newtonsoft.Json.JsonConvert.SerializeObject(fileData);
-
-            // Insert into FlureeDB (custom method)
-
-            //string checkResp = fl.CheckFileHashExists(filehash);
-            //if (!checkResp.StartsWith("Error"))
-            //{
-            //    DataTable dtExisting = fl.Tabulate(checkResp);
-            //    if (dtExisting != null && dtExisting.Rows.Count > 0)
-            //    {
-            //        return fl.ToJson(new { message = "Duplicate filehash found. Record already exists." });
-            //    }
-            //}
+            
 
             string resp = fl.InsertTofiledetails(subdoctype, actualfilename, filename, filehash, agencyname);
 
@@ -529,7 +501,7 @@ public class AgencyFileAccess : System.Web.Services.WebService
             }
             else
             {
-                return fl.ToJson(new { message = "Details Not Added Successfully" });
+                return fl.ToJson(new { message = resp });
             }
         }
         catch (Exception ex)
